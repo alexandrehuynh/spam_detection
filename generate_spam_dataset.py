@@ -4,8 +4,9 @@ from nltk.corpus import wordnet
 import nltk
 
 nltk.download('wordnet')
+nltk.download('omw-1.4')
 
-# Function to replace a word with one of its synonyms
+# Synonym replacement
 def synonym_replacement(word):
     synonyms = set()
     for syn in wordnet.synsets(word):
@@ -16,29 +17,48 @@ def synonym_replacement(word):
     else:
         return word
 
-# Example augmentation function that replaces random words with synonyms
-def augment_message_by_synonym_replacement(message):
-    words = message.split()
-    for i in range(len(words)):
-        if random.random() < 0.2:  # 20% chance to replace each word with a synonym
-            words[i] = synonym_replacement(words[i])
+# Random insertion
+def random_insertion(sentence, n):
+    words = sentence.split()
+    for _ in range(n):
+        new_word = synonym_replacement(random.choice(words))
+        insert_pos = random.randint(0, len(words))
+        words.insert(insert_pos, new_word)
     return ' '.join(words)
 
-# Original spam and ham messages
+# Random swap
+def random_swap(sentence, n=1):
+    words = sentence.split()
+    for _ in range(n):
+        pos1, pos2 = random.sample(range(len(words)), 2)
+        words[pos1], words[pos2] = words[pos2], words[pos1]
+    return ' '.join(words)
+
+# Random deletion
+def random_deletion(sentence, p=0.1):
+    words = sentence.split()
+    if len(words) == 1:  # return if single word
+        return sentence
+    remaining = list(filter(lambda x: random.random() > p, words))  # randomly delete words
+    if len(remaining) == 0:  # if all words are deleted, pick a random word
+        return random.choice(words)
+    return ' '.join(remaining)
+
+# Example original messages
 ham_messages = ["Hey, are you coming to the party tonight?", "Can we meet tomorrow for lunch?"]
 spam_messages = ["Congratulations! You've won a $1000 Walmart gift card. Go to our site to claim now.", "You have been selected for a chance to win an iPhone. Click here to claim your prize."]
 
 # Generating dataset with augmented messages
 data = []
-for _ in range(100):  # Increase or decrease the range for more or less data
-    message = random.choice(ham_messages)
-    augmented_message = augment_message_by_synonym_replacement(message)
-    data.append(["ham", augmented_message])
+for _ in range(200):  # Increase the number for more data
+    msg = random.choice(ham_messages)
+    augmented_msg = random.choice([synonym_replacement, random_insertion, random_swap, random_deletion])(msg)
+    data.append(["ham", augmented_msg])
 
-    message = random.choice(spam_messages)
-    augmented_message = augment_message_by_synonym_replacement(message)
-    data.append(["spam", augmented_message])
+    msg = random.choice(spam_messages)
+    augmented_msg = random.choice([synonym_replacement, random_insertion, random_swap, random_deletion])(msg)
+    data.append(["spam", augmented_msg])
 
-# Creating a DataFrame and saving to CSV
+# Save to CSV
 df = pd.DataFrame(data, columns=['label', 'message'])
 df.to_csv('spam.csv', index=False)
