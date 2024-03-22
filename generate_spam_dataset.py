@@ -45,18 +45,49 @@ def random_deletion(sentence, p=0.1):
     return ' '.join(remaining)
 
 # Example original messages
-ham_messages = ["Hey, are you coming to the party tonight?", "Can we meet tomorrow for lunch?"]
-spam_messages = ["Congratulations! You've won a $1000 Walmart gift card. Go to our site to claim now.", "You have been selected for a chance to win an iPhone. Click here to claim your prize."]
+ham_messages = [
+    "Hey, are you coming to the party tonight?", 
+    "Can we meet tomorrow for lunch?", 
+    "Just finished a great book on data science. Highly recommend it!",
+    "Are we still on for the hiking trip this weekend?",
+    "Happy Birthday! Hope you have a fantastic day filled with joy.",
+    "The meeting has been rescheduled to next Thursday at 3 PM.",
+    "Could you please send me the report by the end of the day?",
+    "Looking forward to our dinner reservation at that new Italian restaurant.",
+    "Reminder: Your doctor's appointment is tomorrow at 10:30 AM.",
+    "I've attached the photos from our last trip. Let me know what you think!",
+    "How's the project going? Need any help from my side?",
+    "Good morning! Don't forget it's your turn to bring snacks for the team meeting."]
+spam_messages = [
+    "Claim your FREE trial of our new weight loss supplement now!",
+    "You're selected! Take our exclusive survey to win a brand new iPad.",
+    "Hot singles in your area waiting to meet you! Click now!",
+    "You've won a cruise to the Bahamas! Call now to claim your ticket.",
+    "Act now to extend your car's warranty before it's too late.",
+    "Congratulations, you've been chosen for a limited-time offer to get 50% off our best-selling product.",
+    "You owe $500 in taxes. Pay immediately through this link to avoid legal action.",
+    "Exclusive deal just for you! Buy one get one free on all our products, today only.",
+    "Your computer is infected with a virus! Download our antivirus software now to protect it.",
+    "This is not a scam! You've won a $1000 gift card. Enter your details to claim."
+]
+
+# Generating dataset with augmented messages
+augmentation_functions = [
+    lambda msg: synonym_replacement(random.choice(msg.split())),  # No change needed here
+    lambda msg: random_insertion(msg, n=2),  # Preset n=2 for example
+    lambda msg: random_swap(msg, n=1),  # Preset n=1, default
+    lambda msg: random_deletion(msg, p=0.1)  # Preset p=0.1, default
+]
 
 # Generating dataset with augmented messages
 data = []
 for _ in range(200):  # Increase the number for more data
     msg = random.choice(ham_messages)
-    augmented_msg = random.choice([synonym_replacement, random_insertion, random_swap, random_deletion])(msg)
+    augmented_msg = random.choice(augmentation_functions)(msg)
     data.append(["ham", augmented_msg])
 
     msg = random.choice(spam_messages)
-    augmented_msg = random.choice([synonym_replacement, random_insertion, random_swap, random_deletion])(msg)
+    augmented_msg = random.choice(augmentation_functions)(msg)
     data.append(["spam", augmented_msg])
 
 # Save to CSV
